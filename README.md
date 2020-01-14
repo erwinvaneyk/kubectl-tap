@@ -1,24 +1,24 @@
 # kubectl-tap
-A kubectl command to trigger immediate reevaluation of Kubernetes objects. It 
-does this by updating an annotation--by default the key `tapped`--of the object.
+This project is an example of a simple kubectl plugin. It showcases typical 
+components (cli-runtime, cobra, apimachinery, ...) and tooling (goreleaser, krew) 
+when working within the Kubernetes ecosystem.
 
-This functionality generally is useful when developing or debugging 
-controllers/operators, to avoid waiting for the periodic reconciliation loop 
-(which can take minutes). By updating the annotation, the object will be 
-enqueued and evaluated immediately by the corresponding controllers.  
+The `tap` command is roughly equivalent to `kubectl annotate pod tapped=$(date)` 
+with the use case to trigger a new controller evaluation of the target objects. 
+It does this by updating an annotation--by default the key `tapped`--of the 
+object.
 
 ## Installation
-This project is a [Kubectl plugin](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/),
+The command is a [Kubectl plugin](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/),
 which means that it will be available as a subcommand in your local `kubectl` as
 long as `kubectl-tap` is present under your PATH.
 
 Install a prebuilt binary from one of the [releases](https://github.com/erwinvaneyk/kubectl-tap/releases):
 ```bash
-VERSION=0.1.0
 OS=darwin # options: [darwin, linux]
-curl -fsSL -o kubectl-tap https://github.com/erwinvaneyk/kubectl-tap/releases/download/$VERSION/kubectl-tap-$OS-amd64
+curl -fsSL -o kubectl-tap https://github.com/erwinvaneyk/kubectl-tap/releases/download/v0.1.0/kubectl-tap-$OS-amd64
 chmod u+x ./kubectl-tap
-mv ./kubectl-tap /usr/local/bin/kubectl-tap
+mv ./kubectl-tap /usr/local/bin
 ``` 
 
 ## Usage

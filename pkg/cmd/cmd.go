@@ -156,7 +156,7 @@ func (o *TapOptions) tap(obj *unstructured.Unstructured) *unstructured.Unstructu
 	if annotations == nil {
 		annotations = map[string]string{}
 	}
-	annotations[o.tapKey] = time.Now().Format(time.RFC3339)
+	annotations[o.tapKey] = time.Now().UTC().Format(time.RFC3339)
 	updatedObj.SetAnnotations(annotations)
 	return updatedObj
 }

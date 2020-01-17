@@ -1,0 +1,44 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: tap
+spec:
+  version: $VERSION
+  shortDescription: Updates objects to trigger reconcillation loops of watching controllers.
+  homepage: https://github.com/erwinvaneyk/kubetap
+  description: |
+    This plugin is roughly equivalent to `kubectl annotate pod tapped=$(date)`
+    with the use case to trigger a new controller evaluation of the target objects.
+    It does this by updating an annotation--by default the key `tapped`--of the
+    object.
+  platforms:
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+      uri: https://github.com/erwinvaneyk/kubectl-tap/releases/download/${VERSION}/kubectl-tap_${VERSION}_darwin_amd64.tar.gz
+      sha256: ${SHA256_DARWIN}
+      files:
+        - from: "*"
+          to: "."
+      bin: kubectl-tap
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      uri: https://github.com/erwinvaneyk/kubectl-tap/releases/download/${VERSION}/kubectl-tap_${VERSION}_linux_amd64.tar.gz
+      sha256: ${SHA256_LINUX}
+      files:
+        - from: "*"
+          to: "."
+      bin: kubectl-tap
+    - selector:
+        matchLabels:
+          os: windows
+          arch: amd64
+      uri: https://github.com/erwinvaneyk/kubectl-tap/releases/download/${VERSION}/kubectl-tap_${VERSION}_windows_amd64.tar.gz
+      sha256: ${SHA256_WINDOWS}
+      files:
+        - from: "*"
+          to: "."
+      bin: kubectl-tap.exe

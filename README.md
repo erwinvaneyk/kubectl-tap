@@ -15,7 +15,7 @@ long as `kubectl-tap` is present under your PATH.
 
 Install a prebuilt binary from one of the [releases](https://github.com/erwinvaneyk/kubectl-tap/releases):
 ```bash
-OS=darwin # options: [darwin, linux]
+OS=darwin # options: [darwin, linux, windows]
 curl -fsSL -o kubectl-tap https://github.com/erwinvaneyk/kubectl-tap/releases/download/v0.1.0/kubectl-tap-$OS-amd64
 chmod u+x ./kubectl-tap
 mv ./kubectl-tap /usr/local/bin

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/erwinvaneyk/kubectl-tap/pkg/version"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -23,8 +24,6 @@ var (
 	defaultTapKey = "tapped"
 )
 
-// TapOptions provides information required to update
-// the current context on a user's KUBECONFIG
 type TapOptions struct {
 	genericclioptions.IOStreams
 	configFlags *genericclioptions.ConfigFlags
@@ -48,12 +47,12 @@ func NewTapOptions(streams genericclioptions.IOStreams) *TapOptions {
 }
 
 // NewCmdTap provides a cobra command wrapping TapOptions
-func NewCmdTap(streams genericclioptions.IOStreams) *cobra.Command {
+func NewCmdTap(streams genericclioptions.IOStreams, version version.Info) *cobra.Command {
 	o := NewTapOptions(streams)
 
 	cmd := &cobra.Command{
 		Use:          "tap TYPE[.VERSION][.GROUP]/NAME [flags]",
-		Short:        "Trigger immediate reevaluation of a resource.",
+		Short:        "Trigger watching controller to reevaluate the resource(s).",
 		Example:      fmt.Sprintf(tapExample, "kubectl"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
@@ -69,9 +68,10 @@ func NewCmdTap(streams genericclioptions.IOStreams) *cobra.Command {
 
 			return nil
 		},
+		Version: version.String(),
 	}
 
-	cmd.Flags().StringVar(&o.tapKey, "key", o.tapKey, "The annotation key to use to update the resource.")
+	cmd.Flags().StringVar(&o.tapKey, "key", o.tapKey, "The key of annotation to update for the resource.")
 	cmd.Flags().StringVarP(&o.labelSelector, "selector", "l", o.labelSelector, "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)")
 	cmd.Flags().BoolVar(&o.allResources, "all", o.allResources, "Tap all resources in the namespace of the specified resource types.")
 
@@ -99,8 +99,6 @@ func (o *TapOptions) Validate() error {
 	return nil
 }
 
-// Run lists all available namespaces on a user's KUBECONFIG or updates the
-// current context based on a provided namespace.
 func (o *TapOptions) Run() error {
 	restCfg, err := o.configFlags.ToRESTConfig()
 	if err != nil {
@@ -124,26 +122,16 @@ func (o *TapOptions) Run() error {
 		Flatten().
 		Do()
 
-	// Convert to unstructured object.
-	obj, err := resp.Object()
-	if err != nil {
-		return err
-	}
-	unstructuredObj := &unstructured.Unstructured{}
-	unstructuredObj.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-	if err != nil {
-		return err
-	}
-
 	return resp.Visit(func(info *resource.Info, err error) error {
 		unstructuredObj := &unstructured.Unstructured{}
 		unstructuredObj.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(info.Object)
 		if err != nil {
 			return err
 		}
-		// Update annotations
+
 		updatedObj := o.tap(unstructuredObj)
 
+		// Update the tapped object
 		updateResp, err := dynamicClient.Resource(info.ResourceMapping().Resource).
 			Namespace(o.targetNamespace).
 			Update(updatedObj, metav1.UpdateOptions{})

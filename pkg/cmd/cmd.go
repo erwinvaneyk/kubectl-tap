@@ -18,8 +18,11 @@ import (
 
 var (
 	tapExample = `
-	# tap deployment foo to trigger reevaluation of the deployment controller.
+	# Tap deployment foo
 	%[1]s deployment/foo
+
+	# Tap all pods in namespace bar
+	%[1]s --namespace bar pods --all
 `
 	defaultTapKey = "tapped"
 )
@@ -56,6 +59,9 @@ func NewCmdTap(streams genericclioptions.IOStreams, version version.Info) *cobra
 		Example:      fmt.Sprintf(tapExample, "kubectl"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return c.Usage()
+			}
 			if err := o.Complete(c, args); err != nil {
 				return err
 			}
